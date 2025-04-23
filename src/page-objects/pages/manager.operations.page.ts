@@ -1,17 +1,20 @@
 import { Page } from '@playwright/test'
 
-import AddCustomerForm from '@src/page-objects/components/add.customer'
-import ViewCustomersTable from '@src/page-objects/components/view.customers'
+import AddCustomerForm from '@src/page-objects/components/add.customer.form'
+import OpenAccountForm from '@src/page-objects/components/open.account.form'
+import CustomersTable from '@src/page-objects/components/customers.table'
 
 class ManagerOperationsPage {
   private readonly page: Page
   private readonly addCustomerForm: AddCustomerForm
-  private readonly viewCustomersTable: ViewCustomersTable
+  private readonly openAccountForm: OpenAccountForm
+  private readonly customersTable: CustomersTable
 
   constructor(page: Page) {
     this.page = page
     this.addCustomerForm = new AddCustomerForm(this.page)
-    this.viewCustomersTable = new ViewCustomersTable(this.page)
+    this.openAccountForm = new OpenAccountForm(this.page)
+    this.customersTable = new CustomersTable(this.page)
   }
 
   // Elements in the page
@@ -22,21 +25,25 @@ class ManagerOperationsPage {
     return this.page.getByRole('button', { name: 'Home' })
   }
 
-  get addCustomerButton() {
+  get addCustomerTab() {
     return this.page.getByRole('button', { name: 'Add Customer' }).first()
   }
-  get openAccountButton() {
-    return this.page.getByRole('button', { name: 'Open Account' })
-  }
-  get customersButton() {
-    return this.page.getByRole('button', { name: 'Customers' })
-  }
-
   get addNewCustomerForm() {
     return this.addCustomerForm
   }
-  get customersTable() {
-    return this.viewCustomersTable
+
+  get openAccountTab() {
+    return this.page.getByRole('button', { name: 'Open Account' })
+  }
+  get openNewAccountForm() {
+    return this.openAccountForm
+  }
+
+  get customersTab() {
+    return this.page.getByRole('button', { name: 'Customers' })
+  }
+  get allCustomersTable() {
+    return this.customersTable
   }
 
   // Element interactions
@@ -44,16 +51,16 @@ class ManagerOperationsPage {
     return this.homeButton.click()
   }
 
-  clickAddCustomerButton() {
-    return this.addCustomerButton.click()
+  clickAddCustomerTab() {
+    return this.addCustomerTab.click()
   }
 
-  clickOpenAccountButton() {
-    return this.openAccountButton.click()
+  clickOpenAccountTab() {
+    return this.openAccountTab.click()
   }
 
-  clickCustomersButton() {
-    return this.customersButton.click()
+  clickCustomersTab() {
+    return this.customersTab.click()
   }
 }
 

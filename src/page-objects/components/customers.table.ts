@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test'
 
-class ViewCustomersTable {
+class CustomersTable {
   private readonly page: Page
 
   constructor(page: Page) {
@@ -29,4 +29,4 @@ class ViewCustomersTable {
   }
 }
 
-export default ViewCustomersTable
+export default CustomersTable

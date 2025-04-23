@@ -8,6 +8,10 @@ class AddCustomerForm {
   }
 
   // Elements in the page
+  get form() {
+    return this.page.getByRole('form')
+  }
+
   get firstNameLabel() {
     return this.page.locator('label').filter({ hasText: 'First Name :' })
   }

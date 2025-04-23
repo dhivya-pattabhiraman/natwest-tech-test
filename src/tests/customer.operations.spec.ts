@@ -1,0 +1,159 @@
+import { test, expect, Page } from '@playwright/test'
+
+import CustomerLoginPage from '@src/page-objects/pages/customer.login.page'
+import CustomerOperationsPage from '@src/page-objects/pages/customer.operations.page'
+
+import CustomerDepositForm from '@src/page-objects/components/customer.deposit.form'
+import CustomerTransactionsTable from '@src/page-objects/components/customer.transactions.table'
+
+const CUSTOMER_NAME = 'Neville Longbottom'
+
+async function verifyCustomerOperationsPage(customerOperationsPage: CustomerOperationsPage) {
+  await expect(customerOperationsPage.heading).toBeVisible()
+  await expect(customerOperationsPage.homeButton).toBeVisible()
+  await expect(customerOperationsPage.logoutButton).toBeVisible()
+  await expect(customerOperationsPage.greetingsMessageFor(CUSTOMER_NAME)).toBeVisible()
+}
+
+async function extractCustomerAccountDetails(customerOperationsPage: CustomerOperationsPage) {
+  let accountNumber: string = ''
+  let accountBalance: string = ''
+  let currency: string = ''
+
+  const accountDetails = await customerOperationsPage.getAccountDetails()
+  const regExpArray = accountDetails.match(/Account Number : ([\d]+) , Balance : ([\d]+) , Currency : ([\w]+)/)
+
+  if (regExpArray) {
+    accountNumber = regExpArray[1]
+    accountBalance = regExpArray[2]
+    currency = regExpArray[3]
+  }
+
+  return { accountNumber, accountBalance, currency }
+}
+
+async function verifyDepositForm(depositForm: CustomerDepositForm) {
+  await expect(depositForm.amountToBeDepositedLabel).toBeVisible()
+  await expect(depositForm.depositButton).toBeVisible()
+}
+
+async function makeDeposit(depositForm: CustomerDepositForm, amount: number) {
+  const dateTime = new Date()
+  const dateStringArray = dateTime.toDateString().split(' ')
+  const timeString = dateTime.toLocaleTimeString()
+  const constructedDateTimeString = `${dateStringArray[1]} ${dateStringArray[2]}, ${dateStringArray[3]} ${timeString}`
+
+  await depositForm.enterAmount(amount)
+  await depositForm.clickDepositButton()
+
+  return constructedDateTimeString
+}
+
+async function verifyTransactionsTable(transactionsTable: CustomerTransactionsTable, page: Page) {
+  await expect(transactionsTable.backButton).toBeVisible()
+  await expect(transactionsTable.resetButton).toBeVisible()
+  expect(await transactionsTable.getTableHeaders()).toEqual(['Date-Time', 'Amount', 'Transaction Type'])
+
+  // If the table has not been refreshed, reload the page
+  const transactionRecords = await transactionsTable.tableRows.all()
+  if (transactionRecords.length === 0) {
+    await page.waitForTimeout(2 * 1000)
+    await page.reload()
+  }
+}
+
+async function verifyTransactionRecordInTable(
+  transactionsTable: CustomerTransactionsTable,
+  datetime: string,
+  amount: number,
+  transactionType: string
+) {
+  await expect(transactionsTable.getTableDataFor(datetime)).toHaveText([datetime, amount.toString(), transactionType])
+}
+
+test.describe('As a Bank customer', () => {
+  test.beforeEach(async ({ page }) => {
+    // Load the customer login page
+    const loginPage = new CustomerLoginPage(page)
+
+    await loginPage.load('/angularJs-protractor/BankingProject/#/customer')
+
+    await expect(page).toHaveTitle('XYZ Bank')
+    await expect(loginPage.heading).toBeVisible()
+    await expect(loginPage.customerLabel).toBeVisible()
+
+    await loginPage.selectCustomer(CUSTOMER_NAME)
+    await expect(loginPage.loginButton).toBeVisible()
+    await loginPage.clickLoginButton()
+  })
+
+  test('I can make a deposit to my account', async ({ page }) => {
+    const customerOperationsPage = new CustomerOperationsPage(page)
+    const depositForm = customerOperationsPage.depositForm
+    const transactionsTable = customerOperationsPage.transactionsTable
+
+    const customerAccountNumber = '1013'
+    const startingAccountBalance = 0
+    const amountDeposited = 1000
+    const customerAccountCurrency = 'Dollar'
+
+    // Verify customer operations page
+    await verifyCustomerOperationsPage(customerOperationsPage)
+
+    // Extract customer account details
+    const { accountNumber, accountBalance, currency } = await extractCustomerAccountDetails(customerOperationsPage)
+
+    // Verify customer account details
+    expect(accountNumber).toContain(customerAccountNumber)
+    expect(accountBalance).toContain(startingAccountBalance.toString())
+    expect(currency).toContain(customerAccountCurrency)
+
+    // Verify the deposit form and deposit some amount
+    await customerOperationsPage.clickDepositTab()
+    await verifyDepositForm(depositForm)
+    const depositDateTime = await makeDeposit(depositForm, amountDeposited)
+
+    // Verify the amount has been deposited successfully
+    await expect(depositForm.depositSuccessfulMessage).toBeVisible()
+    const { accountBalance: newAccountBalance } = await extractCustomerAccountDetails(customerOperationsPage)
+    expect(newAccountBalance).toContain((startingAccountBalance + amountDeposited).toString())
+
+    // Verify the record created in the transactions table
+    await customerOperationsPage.clickTransactionsTab()
+    await verifyTransactionsTable(transactionsTable, page)
+    await verifyTransactionRecordInTable(
+      transactionsTable,
+      depositDateTime,
+      startingAccountBalance + amountDeposited,
+      'Credit'
+    )
+  })
+
+  // test('I cannot add a customer without providing all the mandatory details', async ({ page }) => {
+  //   const managerOperationsPage = new ManagerOperationsPage(page)
+  //   const addNewCustomerForm = managerOperationsPage.addNewCustomerForm
+  //
+  //   const CUSTOMER_FIRST_NAME = 'Padma'
+  //   const CUSTOMER_LAST_NAME = 'Patel'
+  //   const CUSTOMER_POST_CODE = 'BIR 123123'
+  //
+  //   // Verify that the form necessitates the mandatory fields to be filled in
+  //   await managerOperationsPage.clickAddCustomerTab()
+  //
+  //   await expect(addNewCustomerForm.form).not.toHaveClass(/ng-valid ng-valid-required/)
+  //   await expect(addNewCustomerForm.firstNameInput).not.toHaveClass(/ng-valid ng-valid-required/)
+  //   await expect(addNewCustomerForm.lastNameInput).not.toHaveClass(/ng-valid ng-valid-required/)
+  //   await expect(addNewCustomerForm.postCodeInput).not.toHaveClass(/ng-valid ng-valid-required/)
+  //
+  //   // Enter values in all the fields
+  //   await addNewCustomerForm.enterFirstName(CUSTOMER_FIRST_NAME)
+  //   await addNewCustomerForm.enterLastName(CUSTOMER_LAST_NAME)
+  //   await addNewCustomerForm.enterPostCode(CUSTOMER_POST_CODE)
+  //
+  //   // Verify the classes are present
+  //   await expect(addNewCustomerForm.form).toHaveClass(/ng-valid ng-valid-required/)
+  //   await expect(addNewCustomerForm.firstNameInput).toHaveClass(/ng-valid ng-valid-required/)
+  //   await expect(addNewCustomerForm.lastNameInput).toHaveClass(/ng-valid ng-valid-required/)
+  //   await expect(addNewCustomerForm.postCodeInput).toHaveClass(/ng-valid ng-valid-required/)
+  // })
+})
