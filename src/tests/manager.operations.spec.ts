@@ -159,7 +159,6 @@ test.describe('As the Bank manager', () => {
     await addNewCustomerForm.enterLastName(CUSTOMER_LAST_NAME)
     await addNewCustomerForm.enterPostCode(CUSTOMER_POST_CODE)
 
-    // Verify the classes are present
     await expect(addNewCustomerForm.form).toHaveClass(/ng-valid ng-valid-required/)
     await expect(addNewCustomerForm.firstNameInput).toHaveClass(/ng-valid ng-valid-required/)
     await expect(addNewCustomerForm.lastNameInput).toHaveClass(/ng-valid ng-valid-required/)

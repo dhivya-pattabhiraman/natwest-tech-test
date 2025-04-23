@@ -1,6 +1,6 @@
 # ide
 .vscode/*
-.idea
+.idea/*
 
 # Playwright
 node_modules/
@@ -8,3 +8,5 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+dist/

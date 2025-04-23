@@ -118,7 +118,7 @@ test.describe('As a Bank customer', () => {
     const { accountBalance: newAccountBalance } = await extractCustomerAccountDetails(customerOperationsPage)
     expect(newAccountBalance).toContain((startingAccountBalance + amountDeposited).toString())
 
-    // Verify the record created in the transactions table
+    // Verify the record added to the transactions table
     await customerOperationsPage.clickTransactionsTab()
     await verifyTransactionsTable(transactionsTable, page)
     await verifyTransactionRecordInTable(
@@ -129,31 +129,22 @@ test.describe('As a Bank customer', () => {
     )
   })
 
-  // test('I cannot add a customer without providing all the mandatory details', async ({ page }) => {
-  //   const managerOperationsPage = new ManagerOperationsPage(page)
-  //   const addNewCustomerForm = managerOperationsPage.addNewCustomerForm
-  //
-  //   const CUSTOMER_FIRST_NAME = 'Padma'
-  //   const CUSTOMER_LAST_NAME = 'Patel'
-  //   const CUSTOMER_POST_CODE = 'BIR 123123'
-  //
-  //   // Verify that the form necessitates the mandatory fields to be filled in
-  //   await managerOperationsPage.clickAddCustomerTab()
-  //
-  //   await expect(addNewCustomerForm.form).not.toHaveClass(/ng-valid ng-valid-required/)
-  //   await expect(addNewCustomerForm.firstNameInput).not.toHaveClass(/ng-valid ng-valid-required/)
-  //   await expect(addNewCustomerForm.lastNameInput).not.toHaveClass(/ng-valid ng-valid-required/)
-  //   await expect(addNewCustomerForm.postCodeInput).not.toHaveClass(/ng-valid ng-valid-required/)
-  //
-  //   // Enter values in all the fields
-  //   await addNewCustomerForm.enterFirstName(CUSTOMER_FIRST_NAME)
-  //   await addNewCustomerForm.enterLastName(CUSTOMER_LAST_NAME)
-  //   await addNewCustomerForm.enterPostCode(CUSTOMER_POST_CODE)
-  //
-  //   // Verify the classes are present
-  //   await expect(addNewCustomerForm.form).toHaveClass(/ng-valid ng-valid-required/)
-  //   await expect(addNewCustomerForm.firstNameInput).toHaveClass(/ng-valid ng-valid-required/)
-  //   await expect(addNewCustomerForm.lastNameInput).toHaveClass(/ng-valid ng-valid-required/)
-  //   await expect(addNewCustomerForm.postCodeInput).toHaveClass(/ng-valid ng-valid-required/)
-  // })
+  test('I cannot make an empty deposit to my account', async ({ page }) => {
+    const customerOperationsPage = new CustomerOperationsPage(page)
+    const depositForm = customerOperationsPage.depositForm
+
+    // Verify that the amount field cannot be empty
+    await customerOperationsPage.clickDepositTab()
+    await depositForm.clickDepositButton()
+
+    await expect(depositForm.form).not.toHaveClass(/ng-valid ng-valid-required/)
+    await expect(depositForm.amountField).not.toHaveClass(/ng-valid ng-valid-required/)
+
+    // Enter value in the field
+    await depositForm.enterAmount(200)
+
+    // Verify the classes are present
+    await expect(depositForm.form).toHaveClass(/ng-valid ng-valid-required/)
+    await expect(depositForm.amountField).toHaveClass(/ng-valid ng-valid-required/)
+  })
 })
