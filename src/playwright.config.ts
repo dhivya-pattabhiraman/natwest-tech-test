@@ -30,8 +30,9 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['list', { printSteps: true, forceColor: true }],
-    ['html', { open: 'never' }]
+    ['html', { open: 'never', outputFolder: '../test-artifacts/' }]
   ],
+  outputDir: '../test-artifacts/',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
