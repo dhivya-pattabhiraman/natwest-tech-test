@@ -40,8 +40,12 @@ async function verifyDepositForm(depositForm: CustomerDepositForm) {
 async function makeDeposit(depositForm: CustomerDepositForm, amount: number) {
   const dateTime = new Date()
   const dateStringArray = dateTime.toDateString().split(' ')
-  const timeString = dateTime.toLocaleTimeString()
-  const constructedDateTimeString = `${dateStringArray[1]} ${dateStringArray[2]}, ${dateStringArray[3]} ${timeString}`
+  const month = dateStringArray[1]
+  const date = Number(dateStringArray[2]).toString()
+  const year = dateStringArray[3]
+  const time = dateTime.toLocaleTimeString()
+
+  const constructedDateTimeString = `${month} ${date}, ${year} ${time}`
 
   await depositForm.enterAmount(amount)
   await depositForm.clickDepositButton()
@@ -52,11 +56,12 @@ async function makeDeposit(depositForm: CustomerDepositForm, amount: number) {
 async function verifyTransactionsTable(transactionsTable: CustomerTransactionsTable, page: Page) {
   await expect(transactionsTable.backButton).toBeVisible()
   await expect(transactionsTable.resetButton).toBeVisible()
-  expect(await transactionsTable.getTableHeaders()).toEqual(['Date-Time', 'Amount', 'Transaction Type'])
+  await expect(transactionsTable.tableHeaders).toHaveText(['Date-Time', 'Amount', 'Transaction Type'])
 
   // If the table has not been refreshed, reload the page
-  const transactionRecords = await transactionsTable.tableRows.all()
-  if (transactionRecords.length === 0) {
+  const transactionRecords = await transactionsTable.tableRows.count()
+
+  if (transactionRecords === 0) {
     await page.waitForTimeout(2 * 1000)
     await page.reload()
   }
@@ -89,8 +94,7 @@ test.describe('As a Bank customer', () => {
 
   test('I can make a deposit to my account', async ({ page }) => {
     const customerOperationsPage = new CustomerOperationsPage(page)
-    const depositForm = customerOperationsPage.depositForm
-    const transactionsTable = customerOperationsPage.transactionsTable
+    const { depositForm, transactionsTable } = customerOperationsPage
 
     const customerAccountNumber = '1013'
     const startingAccountBalance = 0

@@ -23,10 +23,6 @@ class CustomerTransactionsTable {
   }
 
   // Element interactions
-  getTableHeaders() {
-    return this.tableHeaders.allInnerTexts()
-  }
-
   getTableDataFor(datetime: string) {
     return this.tableRows.filter({ hasText: datetime }).locator('td')
   }

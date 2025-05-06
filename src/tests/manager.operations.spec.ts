@@ -37,7 +37,7 @@ async function verifyOpenNewAccountForm(openNewAccountForm: OpenAccountForm) {
 
 async function verifyCustomersTable(customersTable: CustomersTable) {
   await expect(customersTable.searchBar).toBeVisible()
-  expect(await customersTable.getTableHeaders()).toEqual([
+  await expect(customersTable.tableHeaders).toHaveText([
     'First Name',
     'Last Name',
     'Post Code',
@@ -93,8 +93,7 @@ test.describe('As the Bank manager', () => {
 
   test('I can add a new bank customer', async ({ page }) => {
     const managerOperationsPage = new ManagerOperationsPage(page)
-    const addNewCustomerForm = managerOperationsPage.addNewCustomerForm
-    const customersTable = managerOperationsPage.allCustomersTable
+    const { addNewCustomerForm, allCustomersTable: customersTable } = managerOperationsPage
 
     const CUSTOMER_FIRST_NAME = 'Luna'
     const CUSTOMER_LAST_NAME = 'Lovegood'
@@ -117,8 +116,7 @@ test.describe('As the Bank manager', () => {
 
   test('I cannot add a duplicate customer', async ({ page }) => {
     const managerOperationsPage = new ManagerOperationsPage(page)
-    const addNewCustomerForm = managerOperationsPage.addNewCustomerForm
-    const customersTable = managerOperationsPage.allCustomersTable
+    const { addNewCustomerForm, allCustomersTable: customersTable } = managerOperationsPage
 
     const CUSTOMER_FIRST_NAME = 'Parvati'
     const CUSTOMER_LAST_NAME = 'Patel'
@@ -140,7 +138,7 @@ test.describe('As the Bank manager', () => {
 
   test('I cannot add a customer without providing all the mandatory details', async ({ page }) => {
     const managerOperationsPage = new ManagerOperationsPage(page)
-    const addNewCustomerForm = managerOperationsPage.addNewCustomerForm
+    const { addNewCustomerForm } = managerOperationsPage
 
     const CUSTOMER_FIRST_NAME = 'Padma'
     const CUSTOMER_LAST_NAME = 'Patel'
@@ -168,9 +166,7 @@ test.describe('As the Bank manager', () => {
   test('I can open a new account', async ({ page }) => {
     const managerOperationsPage = new ManagerOperationsPage(page)
 
-    const addNewCustomerForm = managerOperationsPage.addNewCustomerForm
-    const openNewAccountForm = managerOperationsPage.openNewAccountForm
-    const customersTable = managerOperationsPage.allCustomersTable
+    const { addNewCustomerForm, openNewAccountForm, allCustomersTable: customersTable } = managerOperationsPage
 
     const CUSTOMER_FIRST_NAME = 'Ginny'
     const CUSTOMER_LAST_NAME = 'Weasley'

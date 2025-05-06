@@ -23,10 +23,6 @@ class CustomersTable {
   searchFor(name: string) {
     return this.searchBar.fill(name)
   }
-
-  getTableHeaders() {
-    return this.tableHeaders.allInnerTexts()
-  }
 }
 
 export default CustomersTable
